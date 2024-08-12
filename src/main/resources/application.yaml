@@ -1,4 +1,23 @@
-spring.application.name: auth
+spring:
+  application.name: auth
+  datasource:
+    username: ${database.username}
+    password: ${database.password}
+    url: jdbc:postgresql://${database.endpoint}/${database.name}
+    driver-class-name: org.postgresql.Driver
+    generate-unique-name: false
+  flyway:
+    user: ${database.username}
+    password: ${database.password}
+    url: jdbc:postgresql://${database.endpoint}/${database.name}
+    baselineOnMigrate: true
+    table: flyway_${spring.application.name}_schema_history
 
 server:
   port: 9000
+
+database:
+  endpoint: localhost:5432
+  name: demo
+  username: database_username
+  password: database_password
