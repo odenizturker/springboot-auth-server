@@ -1,15 +1,20 @@
 package com.odenizturker.auth.entity
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.odenizturker.auth.model.AuthenticationMethod
+import com.odenizturker.auth.model.ClientSettings
 import com.odenizturker.auth.model.GrantType
+import com.odenizturker.auth.model.TokenSettings
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.security.oauth2.core.AuthorizationGrantType
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient
-import org.springframework.security.oauth2.server.authorization.settings.ClientSettings
+import java.io.Serializable
 import java.time.Instant
 import java.util.UUID
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings as CS
+import org.springframework.security.oauth2.server.authorization.settings.TokenSettings as TS
 
 @Table("clients")
 data class ClientEntity(
@@ -25,9 +30,9 @@ data class ClientEntity(
     val redirectUris: Set<String>,
     val postLogoutRedirectUris: Set<String>,
     val scopes: Set<String>,
-    val clientSettings: String,
-    val tokenSettings: String,
-) {
+    val clientSettings: ClientSettings,
+    val tokenSettings: TokenSettings,
+) : Serializable {
     constructor(client: RegisteredClient) : this(
         clientId = client.clientId,
         clientIdIssuedAt = client.clientIdIssuedAt,
@@ -39,11 +44,11 @@ data class ClientEntity(
         redirectUris = client.redirectUris,
         postLogoutRedirectUris = client.postLogoutRedirectUris,
         scopes = client.scopes,
-        clientSettings = client.clientSettings.settings.toString(),
-        tokenSettings = client.tokenSettings.settings.toString(),
+        clientSettings = ClientSettings(client.clientSettings),
+        tokenSettings = TokenSettings(client.tokenSettings),
     )
 
-    fun toRegisteredClient(): RegisteredClient =
+    fun toRegisteredClient(objectMapper: ObjectMapper): RegisteredClient =
         RegisteredClient
             .withId(id.toString())
             .clientId(clientId)
@@ -55,6 +60,7 @@ data class ClientEntity(
             }.redirectUris { it.addAll(redirectUris) }
             .postLogoutRedirectUris { it.addAll(postLogoutRedirectUris) }
             .scopes { it.addAll(scopes) }
-            .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
+            .clientSettings(CS.withSettings(clientSettings.toMap(objectMapper = objectMapper)).build())
+            .tokenSettings(TS.withSettings(tokenSettings.toMap(objectMapper = objectMapper)).build())
             .build()
 }
