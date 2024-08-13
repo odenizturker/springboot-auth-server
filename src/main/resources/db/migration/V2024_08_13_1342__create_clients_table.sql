@@ -1,22 +1,3 @@
-create type authentication_methods as enum (
-    'CLIENT_SECRET_BASIC',
-    'CLIENT_SECRET_POST',
-    'CLIENT_SECRET_JWT',
-    'PRIVATE_KEY_JWT',
-    'NONE',
-    'TLS_CLIENT_AUTH',
-    'SELF_SIGNED_TLS_CLIENT_AUTH'
-    );
-
-create type grant_types as enum (
-    'AUTHORIZATION_CODE',
-    'REFRESH_TOKEN',
-    'CLIENT_CREDENTIALS',
-    'JWT_BEARER',
-    'DEVICE_CODE',
-    'TOKEN_EXCHANGE'
-    );
-
 create table if not exists "clients"
 (
     id                            uuid primary key default gen_random_uuid(),
