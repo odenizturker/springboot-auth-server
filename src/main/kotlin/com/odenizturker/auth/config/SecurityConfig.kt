@@ -27,7 +27,9 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher
+import org.springframework.security.web.util.matcher.RequestMatcher
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.interfaces.RSAPrivateKey
@@ -39,6 +41,23 @@ import java.util.UUID
 class SecurityConfig {
     @Bean
     @Order(1)
+    fun userSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        val usersPath: RequestMatcher = AntPathRequestMatcher("/users")
+        return http
+            .securityMatcher(usersPath)
+            .authorizeHttpRequests { authorize ->
+                authorize
+                    .requestMatchers(usersPath)
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated()
+            }.csrf { csrf ->
+                csrf.ignoringRequestMatchers(usersPath)
+            }.build()
+    }
+
+    @Bean
+    @Order(2)
     fun authorizationServerSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http)
         http
@@ -62,7 +81,7 @@ class SecurityConfig {
     }
 
     @Bean
-    @Order(2)
+    @Order(3)
     fun defaultSecurityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
             .authorizeHttpRequests { authorize ->

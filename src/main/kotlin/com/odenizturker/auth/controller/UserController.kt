@@ -13,7 +13,7 @@ class UserController(
     private val userService: UserService,
 ) {
     @PostMapping
-    fun create(
+    fun register(
         @RequestBody userRegistrationModel: UserRegistrationModel,
     ) = userService.create(userRegistrationModel)
 }
